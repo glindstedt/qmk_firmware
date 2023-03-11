@@ -55,6 +55,25 @@ bool    process_record_user(uint16_t keycode, keyrecord_t *record) {
             // Let QMK process the KC_BSPC keycode as usual outside of shift
             return true;
         }
+        // Simulate middle mouse click on Shift+Insert to paste Primary selection
+        case KC_INSERT: {
+            static bool middle_mouse_registered;
+            if (mod_state & MOD_MASK_SHIFT) {
+                if (record->event.pressed) {
+                    del_mods(MOD_MASK_SHIFT);
+                    register_code(KC_MS_BTN3);
+                    middle_mouse_registered = true;
+                    set_mods(mod_state);
+                } else {
+                    if (middle_mouse_registered) {
+                        unregister_code(KC_MS_BTN3);
+                        middle_mouse_registered = false;
+                    }
+                }
+                return false;
+            }
+            return true;
+        }
     }
     return true;
 };
